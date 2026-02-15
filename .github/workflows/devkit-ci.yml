@@ -1,0 +1,52 @@
+name: Devkit CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  devkit-ci:
+    name: devkit-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Shell syntax checks
+        run: |
+          set -euo pipefail
+          bash -n scripts/rr scripts/feedback_loop
+
+      - name: Python compile checks
+        run: |
+          set -euo pipefail
+          PYTHONPYCACHEPREFIX=/tmp/codex-pycache python3 -m py_compile tools/feedback_loop.py tools/rr_assist.py
+
+      - name: Enforce no duplicate " 2" tracked files
+        run: |
+          set -euo pipefail
+          matches="$(git ls-files | grep -E ' 2($|\.py$)' || true)"
+          if [ -n "$matches" ]; then
+            echo "ERROR: duplicate '* 2' files are not allowed:"
+            echo "$matches"
+            exit 1
+          fi
+
+      - name: Enforce top-level ownership boundaries
+        run: |
+          set -euo pipefail
+          nested="$(git ls-files | grep -E '^devkit/' || true)"
+          if [ -n "$nested" ]; then
+            echo "ERROR: devkit repository must not track files under a nested devkit/ path:"
+            echo "$nested"
+            exit 1
+          fi
