@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  plan)
+    python tools/rr_assist.py plan "$@"
+    ;;
+  patch)
+    python tools/rr_assist.py patch "$@"
+    ;;
+  note)
+    python tools/rr_assist.py note "$@"
+    ;;
+  reset)
+    python tools/rr_assist.py reset "$@"
+    ;;
+  apply)
+    git apply .rr_assist/patch.diff
+    ./gradlew build
+    ;;
+  *)
+    echo "Usage:"
+    echo "  ./scripts/rr plan -m feature \"do X\" [--grep \"query\"] [--files globs...]"
+    echo "  ./scripts/rr patch"
+    echo "  ./scripts/rr note --scope repo|global \"decision or context to remember\""
+    echo "  ./scripts/rr reset --scope repo|global|both [--memory] [--session] [--thread]"
+    echo "  ./scripts/rr apply"
+    exit 1
+    ;;
+esac
+
