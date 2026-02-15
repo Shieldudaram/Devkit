@@ -1,3 +1,14 @@
 .DS_Store
+.idea/
+.vscode/
+*.iml
+
+.gradle/
+build/
+out/
+run/
+
+.env
 __pycache__/
 .rr_assist/
+.rr_assist_global/
